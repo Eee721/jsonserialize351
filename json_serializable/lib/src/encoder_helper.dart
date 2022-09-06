@@ -51,15 +51,28 @@ abstract class EncodeHelper implements HelperCore {
   }
 
   void _writeToJsonSimple(StringBuffer buffer, Iterable<FieldElement> fields) {
-    buffer
-      ..writeln('=> <String, dynamic>{')
-      ..writeAll(fields.map((field) {
+    // buffer
+    //   ..writeln('=> <String, dynamic>{')
+    //   ..writeAll(fields.map((field) {
+    //     final access = _fieldAccess(field);
+    //     final value =
+    //         '${safeNameAccess(field)}: ${_serializeField(field, access)}';
+    //     return '        $value,\n';
+    //   }))
+    //   ..writeln('};');
+
+    buffer..writeln('{\nvar res = Map<String, dynamic>();\n');
+
+    buffer..writeAll(fields.map((field) {
+        final jsonKey = jsonKeyFor(field);
+        final defaultValue = jsonKey.defaultValue;
         final access = _fieldAccess(field);
         final value =
-            '${safeNameAccess(field)}: ${_serializeField(field, access)}';
-        return '        $value,\n';
+            'if ( ${_serializeField(field, access)} != $defaultValue) res[${safeNameAccess(field)}] = ${_serializeField(field, access)};';
+        return '        $value\n';
       }))
-      ..writeln('};');
+    ..writeln("return res;")
+      ..writeln('}');      
   }
 
   static const _toJsonParamName = 'instance';
